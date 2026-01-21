@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R Luxe Parfums</title>
+
+<style>
+:root {
+  --gold: #b9964a;
+  --bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --text: #333333;
+  --header-bg: #ffffff;
+}
+
+/* Variables para el Modo Negro */
+.dark-mode {
+  --bg: #121212;
+  --card-bg: #1e1e1e;
+  --text: #ffffff;
+  --header-bg: #1a1a1a;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* --- BOTONES DE MODO --- */
+.theme-switch {
+  display: flex;
+  gap: 5px;
+  margin-right: 10px;
+}
+.theme-btn {
+  border: 1px solid var(--gold);
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+.btn-white { background: #fff; color: #000; }
+.btn-black { background: #000; color: #fff; }
+
+/* --- HEADER --- */
+.main-header {
+  background: var(--header-bg);
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logo-container img { height: 50px; width: auto; }
+
+.search-container { flex-grow: 1; display: flex; max-width: 600px; }
+.search-container input {
+  width: 100%; padding: 10px; border: 1px solid #ddd;
+  border-right: none; border-radius: 8px 0 0 8px; outline: none;
+  background: var(--card-bg); color: var(--text);
+}
+.search-btn {
+  background: var(--gold); border: none; padding: 0 15px;
+  border-radius: 0 8px 8px 0; cursor: pointer;
+}
+
+.cart-icon-btn { background: none; border: none; cursor: pointer; position: relative; }
+.cart-icon-btn svg { width: 30px; height: 30px; fill: var(--text); }
+.cart-count {
+  position: absolute; top: -5px; right: -5px; background: var(--gold);
+  color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%;
+}
+
+/* --- FILTROS --- */
+.filters-bar { background: var(--header-bg); padding: 10px 20px; border-top: 1px solid #444; }
+.filter-controls { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+.filter-select {
+  background: var(--gold); color: white; border: none; padding: 10px 15px;
+  border-radius: 6px; font-size: 14px; cursor: pointer; outline: none; min-width: 130px;
+}
+
+/* --- GRID --- */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 15px; min-height: 400px; }
+.card { background: var(--card-bg); border-radius: 15px; padding: 12px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.image { height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; background: white; border-radius: 10px;}
+.image img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.name { font-weight: bold; font-size: 14px; min-height: 40px; margin-bottom: 8px; text-align: center; color: var(--text); }
+.btn-buy { width: 100%; margin-top: 5px; background: var(--gold); color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;}
+
+/* --- PAGINACIÓN --- */
+.pagination { display: flex; justify-content: center; gap: 10px; padding: 20px; }
+.page-btn {
+  background: var(--card-bg); border: 1px solid var(--gold); color: var(--gold);
+  padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+}
+.page-btn.active { background: var(--gold); color: white; }
+
+/* --- FOOTER --- */
+.footer-desc {
+  padding: 40px 20px; text-align: center; background: var(--header-bg);
+  border-top: 1px solid #444; margin-top: 20px;
+}
+.footer-desc p { font-style: italic; color: var(--text); margin-bottom: 10px; font-size: 16px; }
+.footer-desc .envios { font-weight: bold; color: var(--gold); margin-bottom: 15px; font-size: 18px; }
+.social-links img { width: 40px; height: 40px; cursor: pointer; }
+
+/* --- WHATSAPP AUXILIAR --- */
+.whatsapp-float { position: fixed; bottom: 25px; right: 20px; width: 60px; height: 60px; z-index: 999; }
+.whatsapp-float img { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+/* --- CARRITO OVERLAY --- */
+#cartOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; z-index:2000; }
+#cartBox{ background:var(--card-bg); color:var(--text); width:90%; max-width:420px; margin:60px auto; padding:20px; border-radius:18px; position:relative; }
+#closeCart{ position:absolute; top:12px; right:15px; cursor:pointer; font-size: 22px; font-weight: bold;}
+#cartList { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
+#cartList li { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 8px; align-items: center;}
+</style>
+</head>
+<body>
+
+<header class="main-header">
+  <div class="logo-container"><img src="Logo.jpg" alt="R Luxe"></div>
+  
+  <div class="theme-switch">
+    <button class="theme-btn btn-white" onclick="setTheme('white')">White</button>
+    <button class="theme-btn btn-black" onclick="setTheme('black')">Black</button>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Buscar..." onkeyup="resetPage(); filtrarCatalogo()">
+    <button class="search-btn" onclick="filtrarCatalogo()"><svg viewBox="0 0 24 24" width="20" fill="white"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+  </div>
+  
+  <button class="cart-icon-btn" onclick="openCart()">
+    <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<div class="filters-bar">
+  <div class="filter-controls">
+    <select class="filter-select" id="filterCasa" onchange="resetPage(); filtrarCatalogo()">
+        <option value="Todos">☰ Casa</option>
+        <option value="Lattafa">Lattafa</option>
+        <option value="Afnan">Afnan</option>
+        <option value="Armaf / Odyssey">Armaf / Odyssey</option>
+        <option value="Rasasi">Rasasi</option>
+        <option value="Bharara">Bharara</option>
+        <option value="Maison Alhambra">Maison Alhambra</option>
+        <option value="French Avenue">French Avenue</option>
+        <option value="By Stallion">By Stallion</option>
+        <option value="Dumont / Similar">Dumont / Similar</option>
+        <option value="YSL">YSL</option>
+        <option value="Carolina Herrera">Carolina Herrera</option>
+        <option value="Paco Rabanne">Paco Rabanne</option>
+        <option value="JPG">JPG</option>
+        <option value="Azzaro">Azzaro</option>
+        <option value="Valentino">Valentino</option>
+        <option value="Hugo Boss">Hugo Boss</option>
+        <option value="Versace">Versace</option>
+        <option value="Calvin Klein">Calvin Klein</option>
+        <option value="Paris Hilton">Paris Hilton</option>
+        <option value="Louis Vuitton">Louis Vuitton</option>
+        <option value="Kilian">Kilian</option>
+        <option value="Xerjoff">Xerjoff</option>
+        <option value="Toskovat">Toskovat'</option>
+        <option value="Thomas Kosmala">Thomas Kosmala</option>
+    </select>
+    <select class="filter-select" id="filterStatus" onchange="resetPage(); filtrarCatalogo()">
+        <option value="Todos">☰ Disponible</option>
+        <option value="Disponible">Disponible</option>
+        <option value="Proximamente">Próximamente</option>
+        <option value="Agotado">Agotado</option>
+    </select>
+    <select class="filter-select" id="filterCat" onchange="resetPage(); filtrarCatalogo()">
+        <option value="Todos">☰ Categoría</option>
+        <option value="Diseñador">Diseñador</option>
+        <option value="Nicho">Nicho</option>
+        <option value="Arabe">Árabe</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="pagination" id="pagination"></div>
+
+<div class="footer-desc">
+  <p>"Espero no solo venderte un perfume, sino toda una experiencia."</p>
+  <div class="envios">Envíos a todo México 🇲🇽</div>
+  <div class="social-links">
+    <a href="https://www.tiktok.com/@r_4luxe?_r=1&_t=ZS-93GUVWDayJN" target="_blank">
+      <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok">
+    </a>
+  </div>
+</div>
+
+<a href="https://wa.me/528442726710" class="whatsapp-float" target="_blank">
+  <img src="WL.jpg" alt="WhatsApp">
+</a>
+
+<div id="cartOverlay">
+  <div id="cartBox">
+    <span id="closeCart" onclick="closeCart()">✖</span>
+    <h3 style="text-align:center;">Tu Pedido</h3>
+    <ul id="cartList"></ul>
+    <div id="cartTotal" style="font-weight:bold; font-size:20px; text-align:right; margin-top:10px;">Total: $0</div>
+    <button id="btnRealizarPedido" style="width:100%; background:black; color:white; border:none; padding:15px; margin-top:15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px;">Realizar pedido vía WhatsApp</button>
+  </div>
+</div>
+
+<script>
+// --- LOGICA DE TEMA ---
+function setTheme(theme) {
+  if(theme === 'black') {
+    document.body.classList.add('dark-mode');
+  } else {
+    document.body.classList.remove('dark-mode');
+  }
+}
+
+const perfumes = [
+  {id:1, n:"L’Immensité",p3:280,p5:350,c:"Nicho",s:"Disponible", casa:"Louis Vuitton"},
+  {id:2, n:"Angels’ Share",p3:380,p5:590,c:"Nicho",s:"Disponible", casa:"Kilian"},
+  {id:3, n:"Naxos Xerjoff",p3:200,p5:300,c:"Nicho",s:"Disponible", casa:"Xerjoff"},
+  {id:4, n:"Erba Pura Xerjoff",p3:200,p5:300,c:"Nicho",s:"Disponible", casa:"Xerjoff"},
+  {id:5, n:"Pisello JR4",p3:145,p5:290,c:"Nicho",s:"Disponible", casa:"Nicho"},
+  {id:6, n:"Last Birthday Cake",p3:400,p5:675,c:"Nicho",s:"Disponible", casa:"Toskovat"},
+  {id:7, n:"Thomas Kosmala No 4",p3:150,p5:230,c:"Nicho",s:"Disponible", casa:"Thomas Kosmala"},
+  {id:8, n:"Yves Saint Laurent Y",p3:150,p5:220,c:"Diseñador",s:"Disponible", casa:"YSL"},
+  {id:9, n:"Bad Boy Carolina Herrera",p3:120,p5:170,c:"Diseñador",s:"Disponible", casa:"Carolina Herrera"},
+  {id:10, n:"Paco Rabanne Phantom",p3:180,p5:240,c:"Diseñador",s:"Disponible", casa:"Paco Rabanne"},
+  {id:11, n:"Jean Paul Gaultier Elixir",p3:150,p5:220,c:"Diseñador",s:"Disponible", casa:"JPG"},
+  {id:12, n:"YSL MYSLF",p3:120,p5:180,c:"Diseñador",s:"Disponible", casa:"YSL"},
+  {id:13, n:"Azzaro Wanted",p3:120,p5:180,c:"Diseñador",s:"Disponible", casa:"Azzaro"},
+  {id:14, n:"212 VIP",p3:150,p5:200,c:"Diseñador",s:"Disponible", casa:"Carolina Herrera"},
+  {id:15, n:"Vulcan Feu",p3:140,p5:170,c:"Arabe",s:"Disponible", casa:"French Avenue"},
+  {id:16, n:"Valentino Coral Fantasy",p3:180,p5:250,c:"Diseñador",s:"Disponible", casa:"Valentino"},
+  {id:17, n:"One Million Elixir",p3:130,p5:200,c:"Diseñador",s:"Disponible", casa:"Paco Rabanne"},
+  {id:18, n:"Odyssey Home White Edition",p3:100,p5:180,c:"Arabe",s:"Disponible", casa:"Armaf / Odyssey"},
+  {id:19, n:"9PM",p3:85,p5:130,c:"Arabe",s:"Disponible", casa:"Afnan"},
+  {id:20, n:"Bharara King",p3:100,p5:180,c:"Arabe",s:"Disponible", casa:"Bharara"},
+  {id:21, n:"Bharara King Gold",p3:100,p5:180,c:"Arabe",s:"Disponible", casa:"Bharara"},
+  {id:22, n:"Musamam White Intense",p3:100,p5:170,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:23, n:"Hawas for Him",p3:100,p5:180,c:"Arabe",s:"Disponible", casa:"Rasasi"},
+  {id:24, n:"Hawas Ice",p3:100,p5:180,c:"Arabe",s:"Disponible", casa:"Rasasi"},
+  {id:25, n:"Jean Lowe Immortel",p3:100,p5:170,c:"Arabe",s:"Disponible", casa:"Maison Alhambra"},
+  {id:26, n:"Lovely Cherie",p3:70,p5:130,c:"Arabe",s:"Disponible", casa:"Maison Alhambra"},
+  {id:27, n:"Fakhar Lattafa",p3:90,p5:140,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:28, n:"Lattafa Khamrah",p3:90,p5:150,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:29, n:"Hugo Boss Just Different",p3:80,p5:110,c:"Diseñador",s:"Disponible", casa:"Hugo Boss"},
+  {id:30, n:"Club de Nuit Urban Man Elixir",p3:100,p5:150,c:"Arabe",s:"Disponible", casa:"Armaf / Odyssey"},
+  {id:31, n:"Paris Hilton",p3:80,p5:110,c:"Diseñador",s:"Disponible", casa:"Paris Hilton"},
+  {id:32, n:"Now Rouge",p3:90,p5:150,c:"Arabe",s:"Disponible", casa:"Dumont / Similar"},
+  {id:33, n:"Glacier Bold",p3:75,p5:140,c:"Arabe",s:"Disponible", casa:"Maison Alhambra"},
+  {id:34, n:"Honor and Glory",p3:80,p5:150,c:"Arabe",s:"Disponible", casa:"Dumont / Similar"},
+  {id:35, n:"Odyssey Mega",p3:80,p5:140,c:"Arabe",s:"Disponible", casa:"Armaf / Odyssey"},
+  {id:36, n:"Qaeed Lattafa",p3:80,p5:130,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:37, n:"Arabian Sky",p3:100,p5:150,c:"Arabe",s:"Disponible", casa:"Dumont / Similar"},
+  {id:38, n:"Asad Lattafa",p3:100,p5:140,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:39, n:"Asad Bourbon",p3:100,p5:140,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:40, n:"CK One",p3:50,p5:100,c:"Diseñador",s:"Disponible", casa:"Calvin Klein"},
+  {id:41, n:"Pride Pisa",p3:80,p5:140,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:42, n:"Rome Extradosé",p3:130,p5:190,c:"Arabe",s:"Disponible", casa:"Bharara"},
+  {id:43, n:"Versace Fraiche",p3:80,p5:120,c:"Diseñador",s:"Disponible", casa:"Versace"},
+  {id:44, n:"Stallion 53",p3:90,p5:150,c:"Arabe",s:"Disponible", casa:"By Stallion"},
+  {id:45, n:"Intenso",p3:90,p5:150,c:"Arabe",s:"Disponible", casa:"By Stallion"},
+  {id:46, n:"Teriaq Intense",p3:100,p5:150,c:"Arabe",s:"Disponible", casa:"Lattafa"},
+  {id:47, n:"L’Aventure",p3:100,p5:150,c:"Arabe",s:"Disponible", casa:"French Avenue"},
+  {id:48, n:"Hiss Confession",p3:80,p5:140,c:"Arabe",s:"Disponible", casa:"Lattafa"}
+];
+
+let cart = [];
+let currentPage = 1;
+const itemsPerPage = 16;
+let filteredList = [...perfumes];
+
+function resetPage() { currentPage = 1; }
+
+function filtrarCatalogo() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  const cat = document.getElementById("filterCat").value;
+  const casa = document.getElementById("filterCasa").value;
+  const status = document.getElementById("filterStatus").value;
+
+  filteredList = perfumes.filter(p => {
+    const matchNombre = p.n.toLowerCase().includes(query);
+    const matchCat = (cat === "Todos" || p.c === cat);
+    const matchCasa = (casa === "Todos" || p.casa === casa);
+    const matchStatus = (status === "Todos" || p.s === status);
+    return matchNombre && matchCat && matchCasa && matchStatus;
+  });
+  render();
+}
+
+function render() {
+  const grid = document.getElementById("grid");
+  const pagination = document.getElementById("pagination");
+  grid.innerHTML = "";
+  
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const paginatedItems = filteredList.slice(start, end);
+
+  paginatedItems.forEach((p) => {
+    grid.innerHTML += `
+    <div class="card">
+      <div class="image"><img src="Perfume${p.id}.jpg" alt="${p.n}"></div>
+      <div class="name">${p.n}</div>
+      <button class="btn-buy" onclick="addToCart('${p.n}','3 ml',${p.p3})">3ml $${p.p3}</button>
+      <button class="btn-buy" onclick="addToCart('${p.n}','5 ml',${p.p5})">5ml $${p.p5}</button>
+    </div>`;
+  });
+
+  const totalPages = Math.ceil(filteredList.length / itemsPerPage);
+  pagination.innerHTML = "";
+  if(totalPages > 1){
+    for (let i = 1; i <= totalPages; i++) {
+      pagination.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+  }
+}
+
+function changePage(page) {
+  currentPage = page;
+  render();
+  window.scrollTo(0,0);
+}
+
+function openCart(){ document.getElementById("cartOverlay").style.display="block"; }
+function closeCart(){ document.getElementById("cartOverlay").style.display="none"; }
+function addToCart(name,size,price){
+  cart.push({name,size,price});
+  renderCart();
+  document.getElementById("cartCount").innerText = cart.length;
+}
+function removeItem(i){
+  cart.splice(i,1);
+  renderCart();
+  document.getElementById("cartCount").innerText = cart.length;
+}
+function renderCart(){
+  const list = document.getElementById("cartList");
+  list.innerHTML="";
+  let total=0;
+  cart.forEach((item,index)=>{
+    total+=item.price;
+    list.innerHTML+=`<li><span>${item.name} (${item.size})</span><span>$${item.price} <span style="color:red; cursor:pointer;" onclick="removeItem(${index})">✖</span></span></li>`;
+  });
+  document.getElementById("cartTotal").innerText=`Total: $${total}`;
+}
+
+document.getElementById('btnRealizarPedido').addEventListener('click', function() {
+  if(cart.length === 0) {
+    alert("Tu carrito está vacío");
+    return;
+  }
+  let texto = "Hola R Luxe Parfums 👋\nQuiero hacer este pedido:\n\n";
+  let granTotal = 0;
+  cart.forEach(item => {
+    texto += `• ${item.name} (${item.size}) - $${item.price}\n`;
+    granTotal += item.price;
+  });
+  texto += `\n💰 Total: $${granTotal}`;
+  const url = "https://wa.me/528442726710?text=" + encodeURIComponent(texto);
+  window.location.href = url;
+});
+
+filtrarCatalogo();
+</script>
+</body>
+</html>
